@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@WebServlet(urlPatterns = "/student")
+@WebServlet(urlPatterns = "/student2")
 public class StudentController extends HttpServlet {
 
     @Override
@@ -28,14 +28,14 @@ public class StudentController extends HttpServlet {
 
         String id = UUID.randomUUID().toString();
 
+        Jsonb sonb = JsonbBuilder.create();
+        List<StudentDTO> list = sonb.fromJson(req.getReader(), new ArrayList<StudentDTO>() {}.getClass().getGenericSuperclass());
+        list.forEach(System.out::println);
+
         /*Jsonb jsonb = JsonbBuilder.create();
         StudentDTO dto = jsonb.fromJson(req.getReader(), StudentDTO.class);
         dto.setId(id);
         System.out.println(dto);*/
-
-        Jsonb sonb = JsonbBuilder.create();
-        List<StudentDTO> list = sonb.fromJson(req.getReader(), new ArrayList<StudentDTO>() {}.getClass().getGenericSuperclass());
-        list.forEach(System.out::println);
 
        /* //process
         BufferedReader bufferedReader = req.getReader();
