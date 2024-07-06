@@ -1,6 +1,7 @@
 package org.example.sms.controller;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.servlet.ServletException;
@@ -9,9 +10,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 @WebServlet(urlPatterns = "/student")
 public class StudentController extends HttpServlet {
@@ -39,9 +38,15 @@ public class StudentController extends HttpServlet {
 
         //JSON Manipulated with Parson
         JsonReader reader = Json.createReader(req.getReader());
-        JsonObject jsonObject = reader.readObject();
-        System.out.print("Your email is : ");
-        System.out.println(jsonObject.getString("email"));
+
+        /*/System.out.print("Your email is : ");
+        System.out.println(jsonObject.getString("email"));*/
+
+        JsonArray array = reader.readArray();
+        for (int i = 0; i < array.size(); i++) {
+            JsonObject jsonObject = array.getJsonObject(i);
+            System.out.println(jsonObject.getString("name"));
+        }
     }
 
     @Override
