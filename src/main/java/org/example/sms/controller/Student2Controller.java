@@ -22,7 +22,6 @@ public class Student2Controller extends HttpServlet{
 
     static String SAVE_STUDENT = "INSERT INTO student2 (id, name,city, email, level) VALUES (?,?,?,?,?)";
     static String GET_STUDENT = "SELECT * FROM student2 where id = ?";
-
     @Override
     public void init() throws ServletException {
         try{
@@ -84,7 +83,7 @@ public class Student2Controller extends HttpServlet{
             while(resultSet.next()){
                 dto.setId(resultSet.getString("id"));
                 dto.setName(resultSet.getString("name"));
-                dto.setEmail(resultSet.getString("city"));
+                dto.setCity(resultSet.getString("city"));
                 dto.setEmail(resultSet.getString("email"));
                 dto.setLevel(resultSet.getString("level"));
             }
