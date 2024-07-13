@@ -9,12 +9,14 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.sms.dto.StudentDTO;
+import org.example.sms.persistence.Data;
+import org.example.sms.persistence.DataProcess;
+import org.example.sms.util.UtilProcess;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.UUID;
 
 @WebServlet(urlPatterns = "/student",
     initParams = {
@@ -28,8 +30,7 @@ public class Student2Controller extends HttpServlet{
 
     Connection connection;
 
-    static String SAVE_STUDENT = "INSERT INTO student2 (id, name,city, email, level) VALUES (?,?,?,?,?)";
-    static String GET_STUDENT = "SELECT id,name,city,email,level FROM student2 where id = ?";
+    /*static String SAVE_STUDENT = "INSERT INTO student2 (id, name,city, email, level) VALUES (?,?,?,?,?)";*/
     static String UPDATE_STUDENT = "UPDATE student2 SET name=?, city=?, email=?, level=? WHERE id=?";
     static String DELETE_STUDENT  = "DELETE FROM student2 where id = ?";
 
@@ -55,27 +56,13 @@ public class Student2Controller extends HttpServlet{
             resp.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
         }
 
-        Jsonb jsonb = JsonbBuilder.create();
-        StudentDTO dto = jsonb.fromJson(req.getReader(), StudentDTO.class);
-
-        try {
-            var preparedStatement = connection.prepareStatement(SAVE_STUDENT);
-            preparedStatement.setString(1, dto.getId());
-            preparedStatement.setString(2,dto.getName());
-            preparedStatement.setString(3,dto.getCity());
-            preparedStatement.setString(4,dto.getEmail());
-            preparedStatement.setString(5,dto.getLevel());
-
-            if (preparedStatement.executeUpdate() != 0){
-                System.out.println("Student Has been saved");
-            } else {
-                System.out.println("Student Has not been saved");
-            }
-
-            System.out.println(dto);
-
-            preparedStatement.executeUpdate();
-            preparedStatement.close();
+        try(var writer = resp.getWriter()) {
+            Jsonb jsonb = JsonbBuilder.create();
+            StudentDTO dto = jsonb.fromJson(req.getReader(), StudentDTO.class);
+            DataProcess dp = new DataProcess();
+            dto.setId(UtilProcess.generateId());
+            writer.write(dp.saveStudent(dto, connection));
+            resp.setStatus(HttpServletResponse.SC_CREATED);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -84,27 +71,14 @@ public class Student2Controller extends HttpServlet{
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         //todo : Getting a Student
-        var dto = new StudentDTO();
         var studentID = req.getParameter("id");
+        DataProcess dp = new DataProcess();
 
         try (var writer = resp.getWriter()){
-            var ps = connection.prepareStatement(GET_STUDENT);
-
-            ps.setString(1, studentID);
-            var resultSet = ps.executeQuery();
-            while(resultSet.next()){
-                dto.setId(resultSet.getString("id"));
-                dto.setName(resultSet.getString("name"));
-                dto.setCity(resultSet.getString("city"));
-                dto.setEmail(resultSet.getString("email"));
-                dto.setLevel(resultSet.getString("level"));
-            }
-
+            StudentDTO dto = dp.getStudent(studentID, connection);
             resp.setContentType("application/json");
             var jsonb = JsonbBuilder.create();
-            jsonb.toJson(dto, resp.getWriter());
-
-            writer.write(dto.toString());
+            jsonb.toJson(dto, writer);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -118,30 +92,22 @@ public class Student2Controller extends HttpServlet{
             resp.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
         }
 
-        try {
-            var pstm = this.connection.prepareStatement(UPDATE_STUDENT);
+        DataProcess dp = new DataProcess();
+
+        try (var writer = resp.getWriter()){
 
             var id = req.getParameter("id");
             Jsonb jsonb = JsonbBuilder.create();
-            var updatedStudent = jsonb.fromJson(req.getReader(),StudentDTO.class);
+            StudentDTO dto = jsonb.fromJson(req.getReader(),StudentDTO.class);
 
-            pstm.setString(1, updatedStudent.getName());
-            pstm.setString(2, updatedStudent.getCity());
-            pstm.setString(3, updatedStudent.getEmail());
-            pstm.setString(4, updatedStudent.getLevel());
-            pstm.setString(5, id);
-
-            if (pstm.executeUpdate() != 0){
-                System.out.println("Student Has been updated");
+            if (dp.updateStudent(id,dto,connection)) {
+                writer.write("Student Updated");
             } else {
-                System.out.println("Student Has not been updated");
+                writer.write("Student Hasn't Updated");
             }
-
-            pstm.executeUpdate();
-            pstm.close();
-
+            resp.setStatus(HttpServletResponse.SC_ACCEPTED);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -154,22 +120,13 @@ public class Student2Controller extends HttpServlet{
         }
 
         var stuId = req.getParameter("id");
+        DataProcess dp = new DataProcess();
 
-        try {
-            var pstm = this.connection.prepareStatement(DELETE_STUDENT);
-
-            pstm.setString(1, stuId);
-
-            if (pstm.executeUpdate() != 0){
-                System.out.println("Student Has been deleted");
-                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            } else {
-                System.out.println("Student Has not been deleted");
-                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            }
-
-            pstm.executeUpdate();
-            pstm.close();
+        try(var writer = resp.getWriter()) {
+            StudentDTO dto = dp.getStudent(stuId, connection);
+            resp.setContentType("application/json");
+            var jsonb = JsonbBuilder.create();
+            jsonb.toJson(dto, writer);
         } catch (SQLException e) {
             e.printStackTrace();
         }
