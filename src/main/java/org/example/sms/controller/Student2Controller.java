@@ -15,13 +15,15 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.UUID;
 
-@WebServlet(urlPatterns = "/student")
+@WebServlet(urlPatterns = "/student", loadOnStartup = 2)
 public class Student2Controller extends HttpServlet{
 
     Connection connection;
 
     static String SAVE_STUDENT = "INSERT INTO student2 (id, name,city, email, level) VALUES (?,?,?,?,?)";
-    static String GET_STUDENT = "SELECT * FROM student2 where id = ?";
+    static String GET_STUDENT = "SELECT id,name,city,email,level FROM student2 where id = ?";
+    static String UPDATE_STUDENT = "UPDATE student2 SET name=?, city=?, email=?, level=? WHERE id=?";
+
     @Override
     public void init() throws ServletException {
         try{
@@ -54,17 +56,16 @@ public class Student2Controller extends HttpServlet{
             preparedStatement.setString(4,dto.getEmail());
             preparedStatement.setString(5,dto.getLevel());
 
-            /*if (preparedStatement != 0){
+            if (preparedStatement.executeUpdate() != 0){
                 System.out.println("Student Has been saved");
             } else {
                 System.out.println("Student Has not been saved");
-            }*/
+            }
 
             System.out.println(dto);
 
             preparedStatement.executeUpdate();
             preparedStatement.close();
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -95,6 +96,40 @@ public class Student2Controller extends HttpServlet{
             writer.write(dto.toString());
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (!req.getContentType().toLowerCase().contains("application/json") || (req.getContentType() == null)){
+            //error
+            resp.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
+        }
+
+        try {
+            var pstm = this.connection.prepareStatement(UPDATE_STUDENT);
+
+            var id = req.getParameter("id");
+            Jsonb jsonb = JsonbBuilder.create();
+            var updatedStudent = jsonb.fromJson(req.getReader(),StudentDTO.class);
+
+            pstm.setString(1, updatedStudent.getName());
+            pstm.setString(2, updatedStudent.getCity());
+            pstm.setString(3, updatedStudent.getEmail());
+            pstm.setString(4, updatedStudent.getLevel());
+            pstm.setString(5, id);
+
+            if (pstm.executeUpdate() != 0){
+                System.out.println("Student Has been updated");
+            } else {
+                System.out.println("Student Has not been updated");
+            }
+
+            pstm.executeUpdate();
+            pstm.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
