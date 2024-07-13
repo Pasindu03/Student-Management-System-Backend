@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.beans.BeanProperty;
+import java.beans.JavaBean;
 import java.io.Serializable;
 
 @NoArgsConstructor
