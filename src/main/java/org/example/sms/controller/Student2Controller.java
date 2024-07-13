@@ -123,7 +123,7 @@ public class Student2Controller extends HttpServlet{
         DataProcess dp = new DataProcess();
 
         try(var writer = resp.getWriter()) {
-            StudentDTO dto = dp.getStudent(stuId, connection);
+            String dto = dp.deleteStudent(stuId, connection);
             resp.setContentType("application/json");
             var jsonb = JsonbBuilder.create();
             jsonb.toJson(dto, writer);
