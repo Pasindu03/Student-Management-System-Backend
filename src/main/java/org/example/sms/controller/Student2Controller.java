@@ -23,6 +23,7 @@ public class Student2Controller extends HttpServlet{
     static String SAVE_STUDENT = "INSERT INTO student2 (id, name,city, email, level) VALUES (?,?,?,?,?)";
     static String GET_STUDENT = "SELECT id,name,city,email,level FROM student2 where id = ?";
     static String UPDATE_STUDENT = "UPDATE student2 SET name=?, city=?, email=?, level=? WHERE id=?";
+    static String DELETE_STUDENT  = "DELETE FROM student2 where id = ?";
 
     @Override
     public void init() throws ServletException {
@@ -128,6 +129,35 @@ public class Student2Controller extends HttpServlet{
             pstm.executeUpdate();
             pstm.close();
 
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (!req.getContentType().toLowerCase().contains("application/json") || (req.getContentType() == null)){
+            //error
+            resp.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
+        }
+
+        var stuId = req.getParameter("id");
+
+        try {
+            var pstm = this.connection.prepareStatement(DELETE_STUDENT);
+
+            pstm.setString(1, stuId);
+
+            if (pstm.executeUpdate() != 0){
+                System.out.println("Student Has been deleted");
+                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            } else {
+                System.out.println("Student Has not been deleted");
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
+
+            pstm.executeUpdate();
+            pstm.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
