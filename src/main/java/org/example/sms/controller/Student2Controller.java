@@ -3,6 +3,7 @@ package org.example.sms.controller;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebInitParam;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +16,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.UUID;
 
-@WebServlet(urlPatterns = "/student", loadOnStartup = 2)
+@WebServlet(urlPatterns = "/student",
+    initParams = {
+        @WebInitParam(name = "driver", value = "com.mysql.cj.jdbc.Driver"),
+        @WebInitParam(name = "dbURL", value = "jdbc:mysql://localhost:3306/AADSMS"),
+        @WebInitParam(name = "dbUsername", value = "root"),
+        @WebInitParam(name = "dbPassword", value = "Mixage03!")
+    }
+)
 public class Student2Controller extends HttpServlet{
 
     Connection connection;
@@ -28,10 +36,10 @@ public class Student2Controller extends HttpServlet{
     @Override
     public void init() throws ServletException {
         try{
-            var driverClass = getServletContext().getInitParameter("driver");
-            var dbURL = getServletContext().getInitParameter("dbURL");
-            var username = getServletContext().getInitParameter("dbUsername");
-            var password = getServletContext().getInitParameter("dbPassword");
+            var driverClass = getServletConfig().getInitParameter("driver");
+            var dbURL = getServletConfig().getInitParameter("dbURL");
+            var username = getServletConfig().getInitParameter("dbUsername");
+            var password = getServletConfig().getInitParameter("dbPassword");
             Class.forName(driverClass);
             this.connection = DriverManager.getConnection(dbURL, username, password);
         } catch (ClassNotFoundException | SQLException e) {
@@ -41,6 +49,7 @@ public class Student2Controller extends HttpServlet{
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //todo : Saving a Student
         if (!req.getContentType().toLowerCase().contains("application/json") || (req.getContentType() == null)){
             //error
             resp.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
@@ -74,6 +83,7 @@ public class Student2Controller extends HttpServlet{
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //todo : Getting a Student
         var dto = new StudentDTO();
         var studentID = req.getParameter("id");
 
@@ -102,6 +112,7 @@ public class Student2Controller extends HttpServlet{
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //todo : Updating a Student
         if (!req.getContentType().toLowerCase().contains("application/json") || (req.getContentType() == null)){
             //error
             resp.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
@@ -136,6 +147,7 @@ public class Student2Controller extends HttpServlet{
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //todo : Deleting a Student
         if (!req.getContentType().toLowerCase().contains("application/json") || (req.getContentType() == null)){
             //error
             resp.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
