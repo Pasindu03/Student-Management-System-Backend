@@ -32,10 +32,10 @@ public class StudentController extends HttpServlet {
         List<StudentDTO> list = sonb.fromJson(req.getReader(), new ArrayList<StudentDTO>() {}.getClass().getGenericSuperclass());
         list.forEach(System.out::println);
 
-        /*Jsonb jsonb = JsonbBuilder.create();
+        Jsonb jsonb = JsonbBuilder.create();
         StudentDTO dto = jsonb.fromJson(req.getReader(), StudentDTO.class);
         dto.setId(id);
-        System.out.println(dto);*/
+        System.out.println(dto);
 
        /* //process
         BufferedReader bufferedReader = req.getReader();
