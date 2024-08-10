@@ -13,37 +13,26 @@ import org.example.sms.persistence.Data;
 import org.example.sms.persistence.DataProcess;
 import org.example.sms.util.UtilProcess;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-@WebServlet(urlPatterns = "/student",
-    initParams = {
-        @WebInitParam(name = "driver", value = "com.mysql.cj.jdbc.Driver"),
-        @WebInitParam(name = "dbURL", value = "jdbc:mysql://localhost:3306/AADSMS"),
-        @WebInitParam(name = "dbUsername", value = "root"),
-        @WebInitParam(name = "dbPassword", value = "Mixage03!")
-    }
-)
+@WebServlet(urlPatterns = "/student")
 public class Student2Controller extends HttpServlet{
 
     Connection connection;
 
-    /*static String SAVE_STUDENT = "INSERT INTO student2 (id, name,city, email, level) VALUES (?,?,?,?,?)";*/
-    static String UPDATE_STUDENT = "UPDATE student2 SET name=?, city=?, email=?, level=? WHERE id=?";
-    static String DELETE_STUDENT  = "DELETE FROM student2 where id = ?";
-
     @Override
     public void init() throws ServletException {
         try{
-            var driverClass = getServletConfig().getInitParameter("driver");
-            var dbURL = getServletConfig().getInitParameter("dbURL");
-            var username = getServletConfig().getInitParameter("dbUsername");
-            var password = getServletConfig().getInitParameter("dbPassword");
-            Class.forName(driverClass);
-            this.connection = DriverManager.getConnection(dbURL, username, password);
-        } catch (ClassNotFoundException | SQLException e) {
+            var ctx = new InitialContext();
+            DataSource pool = (DataSource) ctx.lookup("java:comp/env/jdbc/stuRegistration");
+            this.connection = pool.getConnection();
+        } catch (SQLException | NamingException e) {
             e.printStackTrace();
         }
     }
